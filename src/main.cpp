@@ -35,7 +35,5 @@ int CALLBACK WinMain(HINSTANCE Instance,
 		DispatchMessage(&Msg);
 	}
 
-	//Test
-
 	return 0;
 }
