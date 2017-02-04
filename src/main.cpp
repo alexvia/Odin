@@ -3,7 +3,16 @@
 LRESULT CALLBACK WindowProc(HWND Window,
 	UINT Msg, WPARAM WParam, LPARAM LParam)
 {
-	return DefWindowProc(Window, Msg, WParam, LParam);
+	switch(Msg)
+	{
+		case WM_DESTROY:
+            PostQuitMessage(0);
+            break;
+        default:
+        	return DefWindowProc(Window, Msg, WParam, LParam);
+	}
+
+	return 0;
 }
 
 int CALLBACK WinMain(HINSTANCE Instance,
@@ -15,7 +24,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	WindowClass.lpfnWndProc = WindowProc;
 	WindowClass.hInstance = Instance;
 	//WindowClass.hIcon = ;
-  	//WindowClass.hCursor = ;
+  	WindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
   	WindowClass.lpszClassName = "ClassName";
 
 	RegisterClass(&WindowClass);
@@ -26,14 +35,28 @@ int CALLBACK WinMain(HINSTANCE Instance,
  		CW_USEDEFAULT, CW_USEDEFAULT,
  		0, 0, 0, 0);
 
-	ShowWindow(Window, CmdShow);
+	ShowWindow(Window, SW_SHOW);
+	UpdateWindow(Window);
 
-	MSG Msg = {};
-	while (GetMessage(&Msg, NULL, 0, 0))
+	bool running = true;
+	MSG Msg;
+	while(running)
 	{
-		TranslateMessage(&Msg);
-		DispatchMessage(&Msg);
-	}	
+		if(PeekMessage(&Msg, 0, 0, 0, PM_REMOVE))
+		{
+			if(Msg.message == WM_QUIT)
+			{
+				running = false;
+			}
+
+			TranslateMessage(&Msg);
+			DispatchMessage(&Msg);
+		}
+
+		// Update and Render
+
+		// Swap buffers
+	}
 
 	return 0;
 }
