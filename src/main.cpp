@@ -33,11 +33,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	{
 		TranslateMessage(&Msg);
 		DispatchMessage(&Msg);
-	}
-
-
-
-	
+	}	
 
 	return 0;
 }
