@@ -1,5 +1,7 @@
 #include "glad/glad.h"
 
+#define Assert(Expression) if(!(Expression)) {*(int *)0 = 0;}
+
 LRESULT CALLBACK WindowProc(HWND Window,
 	UINT Msg, WPARAM WParam, LPARAM LParam)
 {
@@ -15,34 +17,11 @@ LRESULT CALLBACK WindowProc(HWND Window,
 	return 0;
 }
 
-int CALLBACK WinMain(HINSTANCE Instance,
-	HINSTANCE PrevInstance,
-	LPSTR CmdLine, int CmdShow)
+void InitOpenGL(HWND Window, HDC *DeviceContext, HGLRC *RenderingContext)
 {
-	WNDCLASS WindowClass {};
-	WindowClass.style = CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
-	WindowClass.lpfnWndProc = WindowProc;
-	WindowClass.hInstance = Instance;
-	//WindowClass.hIcon = ;
-  	WindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-  	WindowClass.lpszClassName = "ClassName";
+	*DeviceContext = GetDC(Window);
+	Assert(*DeviceContext != 0);
 
-	RegisterClass(&WindowClass);
-
-	int Width = 1280;
-	int Height = 720;
-	RECT r = { 0, 0, Width, Height };
-	AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, false);
-
-	HWND Window = CreateWindow("ClassName",
- 		"MyWindow", WS_OVERLAPPEDWINDOW,
- 		CW_USEDEFAULT, CW_USEDEFAULT,
- 		r.right - r.left, r.bottom - r.top,
- 		0, 0, 0, 0);
-
-	// Init OpenGL
-	HDC DeviceContext = GetDC(Window);
-	// ----- SetGLFormat(); -------------
 	PIXELFORMATDESCRIPTOR pfd =
 	{
 		sizeof(PIXELFORMATDESCRIPTOR), 1,
@@ -54,15 +33,52 @@ int CALLBACK WinMain(HINSTANCE Instance,
 		0,0,0,0,0,0,0
 	};
 
-	int indexPixelFormat = ChoosePixelFormat(DeviceContext, &pfd);
-	SetPixelFormat(DeviceContext, indexPixelFormat, &pfd);
-	// ----------------------------------
-	HGLRC RenderingContext = wglCreateContext(DeviceContext);
-	wglMakeCurrent(DeviceContext, RenderingContext);
+	int indexPixelFormat = ChoosePixelFormat(*DeviceContext, &pfd);
+	SetPixelFormat(*DeviceContext, indexPixelFormat, &pfd);
+
+	*RenderingContext = wglCreateContext(*DeviceContext);
+	Assert(*RenderingContext != 0);
+	Assert(wglMakeCurrent(*DeviceContext, *RenderingContext));
+
+	// Load OpenGL Extensions
 	if (!gladLoadGL())
 	{
 		MessageBox(0, "gladLoadGL() failed", "Failed to load OpenGL", 0);
 	}
+}
+
+int CALLBACK WinMain(HINSTANCE Instance,
+	HINSTANCE PrevInstance,
+	LPSTR CmdLine, int CmdShow)
+{
+	// Register Window class
+	WNDCLASS WindowClass {};
+	WindowClass.style = CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
+	WindowClass.lpfnWndProc = WindowProc;
+	WindowClass.hInstance = Instance;
+	//WindowClass.hIcon = ;
+  	WindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+  	WindowClass.lpszClassName = "ClassName";
+	RegisterClass(&WindowClass);
+
+	// Compute Window dimensions
+	int Width = 1280;
+	int Height = 720;
+	RECT r = { 0, 0, Width, Height };
+	AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, false);
+
+	// Create Window
+	HWND Window = CreateWindow("ClassName",
+ 		"MyWindow", WS_OVERLAPPEDWINDOW,
+ 		CW_USEDEFAULT, CW_USEDEFAULT,
+ 		r.right - r.left, r.bottom - r.top,
+ 		0, 0, 0, 0);
+
+	// Init OpenGL
+	HDC DeviceContext = 0;
+	HGLRC RenderingContext = 0;
+	InitOpenGL(Window, &DeviceContext, &RenderingContext);
+	
 	// ----- Resize(SCRWIDTH, SCRHEIGHT); ------
 	glViewport(0, 0, Width, Height);
 	// glMatrixMode(GL_PROJECTION);	// Remove this
