@@ -60,6 +60,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	// ----- Resize(SCRWIDTH, SCRHEIGHT); ------
 	glViewport(0, 0, Width, Height);
 	// -----------------------------------------
+	SwapBuffers(DeviceContext);
 	ShowWindow(Window, SW_SHOW);
 	UpdateWindow(Window);
 
@@ -79,6 +80,15 @@ int CALLBACK WinMain(HINSTANCE Instance,
 		}
 
 		// Update and Render
+		glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+		glLoadIdentity();//load identity matrix
+
+		glBegin(GL_TRIANGLES);//start drawing triangles
+		glVertex3f(-1.0f,-1.0f,0.0f);//triangle one first vertex
+		glVertex3f(+1.0f,-1.0f,0.0f);//triangle one second vertex
+		glVertex3f(+0.0f,+1.0f,0.0f);//triangle one third vertex
+		glEnd();//end drawing of triangles
 
 		// Swap buffers
 		SwapBuffers(DeviceContext);
