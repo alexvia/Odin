@@ -32,10 +32,13 @@ int CALLBACK WinMain(HINSTANCE Instance,
 
 	int Width = 1280;
 	int Height = 720;
+	RECT r = { 0, 0, Width, Height };
+	AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, false);
+	
 	HWND Window = CreateWindow("ClassName",
  		"MyWindow", WS_OVERLAPPEDWINDOW,
  		CW_USEDEFAULT, CW_USEDEFAULT,
- 		Width, Height,
+ 		r.right - r.left, r.bottom - r.top,
  		0, 0, 0, 0);
 
 	// Init OpenGL
