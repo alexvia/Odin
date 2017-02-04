@@ -1,5 +1,4 @@
-#include <windows.h>
-#include <GL/GL.h>
+#include "glad/glad.h"
 
 LRESULT CALLBACK WindowProc(HWND Window,
 	UINT Msg, WPARAM WParam, LPARAM LParam)
@@ -34,7 +33,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	int Height = 720;
 	RECT r = { 0, 0, Width, Height };
 	AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, false);
-	
+
 	HWND Window = CreateWindow("ClassName",
  		"MyWindow", WS_OVERLAPPEDWINDOW,
  		CW_USEDEFAULT, CW_USEDEFAULT,
@@ -60,9 +59,21 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	// ----------------------------------
 	HGLRC RenderingContext = wglCreateContext(DeviceContext);
 	wglMakeCurrent(DeviceContext, RenderingContext);
+	if (!gladLoadGL())
+	{
+		MessageBox(0, "gladLoadGL() failed", "Failed to load OpenGL", 0);
+	}
 	// ----- Resize(SCRWIDTH, SCRHEIGHT); ------
 	glViewport(0, 0, Width, Height);
+	// glMatrixMode(GL_PROJECTION);	// Remove this
+	// glLoadIdentity();				// Remove this
+	// gluPerspective(45.0f, Width / Height, 0.2f, 255.0f);	// Remove this
+	// glMatrixMode(GL_MODELVIEW);		// Remove this
 	// -----------------------------------------
+	
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+
 	SwapBuffers(DeviceContext);
 	ShowWindow(Window, SW_SHOW);
 	UpdateWindow(Window);
@@ -83,19 +94,24 @@ int CALLBACK WinMain(HINSTANCE Instance,
 		}
 
 		// Update and Render
-		glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+		//glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-		glLoadIdentity();//load identity matrix
 
 		glBegin(GL_TRIANGLES);//start drawing triangles
+		glColor3f(1.0f, 0.0f, 0.0f);
 		glVertex3f(-1.0f,-1.0f,0.0f);//triangle one first vertex
+		glColor3f(0.0f, 1.0f, 0.0f);
 		glVertex3f(+1.0f,-1.0f,0.0f);//triangle one second vertex
+		glColor3f(0.0f, 0.0f, 1.0f);
 		glVertex3f(+0.0f,+1.0f,0.0f);//triangle one third vertex
 		glEnd();//end drawing of triangles
 
 		// Swap buffers
 		SwapBuffers(DeviceContext);
 	}
+
+	wglMakeCurrent(DeviceContext, 0);
+	wglDeleteContext(RenderingContext);
 
 	return 0;
 }
