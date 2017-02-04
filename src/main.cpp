@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <GL/GL.h>
 
 LRESULT CALLBACK WindowProc(HWND Window,
 	UINT Msg, WPARAM WParam, LPARAM LParam)
@@ -29,12 +30,36 @@ int CALLBACK WinMain(HINSTANCE Instance,
 
 	RegisterClass(&WindowClass);
 
+	int Width = 1280;
+	int Height = 720;
 	HWND Window = CreateWindow("ClassName",
  		"MyWindow", WS_OVERLAPPEDWINDOW,
  		CW_USEDEFAULT, CW_USEDEFAULT,
- 		CW_USEDEFAULT, CW_USEDEFAULT,
+ 		Width, Height,
  		0, 0, 0, 0);
 
+	// Init OpenGL
+	HDC DeviceContext = GetDC(Window);
+	// ----- SetGLFormat(); -------------
+	PIXELFORMATDESCRIPTOR pfd =
+	{
+		sizeof(PIXELFORMATDESCRIPTOR), 1,
+		PFD_DRAW_TO_WINDOW|PFD_SUPPORT_OPENGL|PFD_DOUBLEBUFFER,
+		PFD_TYPE_RGBA, 
+		32,
+		0,0,0,0,0,0,0,0,0,0,0,0,0, // useles parameters
+		16,
+		0,0,0,0,0,0,0
+	};
+
+	int indexPixelFormat = ChoosePixelFormat(DeviceContext, &pfd);
+	SetPixelFormat(DeviceContext, indexPixelFormat, &pfd);
+	// ----------------------------------
+	HGLRC RenderingContext = wglCreateContext(DeviceContext);
+	wglMakeCurrent(DeviceContext, RenderingContext);
+	// ----- Resize(SCRWIDTH, SCRHEIGHT); ------
+	glViewport(0, 0, Width, Height);
+	// -----------------------------------------
 	ShowWindow(Window, SW_SHOW);
 	UpdateWindow(Window);
 
@@ -56,6 +81,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 		// Update and Render
 
 		// Swap buffers
+		SwapBuffers(DeviceContext);
 	}
 
 	return 0;
