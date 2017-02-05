@@ -18,6 +18,9 @@ typedef int64_t i64;
 typedef float  f32;
 typedef double f64;
 
+#define Kilobytes(x) (1024 * (x))
+#define Megabytes(x) (1024 * 1024 * (x))
+#define Gigabytes(x) (1024 * 1024 * 1024 (x))
 
 #define Assert(Expression) if(!(Expression)) {*(int *)0 = 0;}
 

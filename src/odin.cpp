@@ -90,6 +90,24 @@ extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 	glDeleteShader(VShader);
 	glDeleteShader(FShader);
 
+	glUseProgram(Program);
+
+	float Vertices[] =
+	{
+		-1.0f, -1.0f, 0.0f,
+		+1.0f, -1.0f, 0.0f,
+		+0.0f, +1.0f, 0.0f
+	};
+
+	GLuint VAO, VBO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
 	// ----- Resize(SCRWIDTH, SCRHEIGHT); ------
 	glViewport(0, 0, State->Width, State->Height);
 	// glMatrixMode(GL_PROJECTION);	// Remove this
@@ -106,14 +124,7 @@ extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *Stat
 	//glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-	glBegin(GL_TRIANGLES);//start drawing triangles
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glVertex3f(-1.0f,-1.0f,0.0f);//triangle one first vertex
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glVertex3f(+1.0f,-1.0f,0.0f);//triangle one second vertex
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex3f(+0.0f,+1.0f,0.0f);//triangle one third vertex
-	glEnd();//end drawing of triangles
+	glDrawArrays(GL_TRIANGLES, 0, 9);
 }
 
 // --------------------------------------------------------------------------
@@ -121,7 +132,7 @@ extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *Stat
 
 BOOL WINAPI DllMain(HINSTANCE Instance, DWORD Reason, LPVOID Reserved)
 {
-	// Load OpenGL extension when loading the dll
+	// Load OpenGL extensions when loading the dll
 	if(Reason == DLL_PROCESS_ATTACH)
 	{
 		if(!gladLoadGL())

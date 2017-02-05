@@ -1,3 +1,4 @@
 @echo off
-
-build\odin_win32
+pushd build
+odin_win32.exe
+popd

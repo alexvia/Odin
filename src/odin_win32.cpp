@@ -110,6 +110,11 @@ int CALLBACK WinMain(HINSTANCE Instance,
   	WindowClass.lpszClassName = "ClassName";
 	RegisterClass(&WindowClass);
 
+	if(!SetCurrentDirectory("../data"))
+	{
+		return -1;
+	}
+
 	// Compute Window dimensions
 	// TODO: Load this from a config file
 	u32 Width = 1280;
@@ -134,7 +139,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	Game_State state {};
 	state.Width = Width;
 	state.Height = Height;
-	state.Memory = (u8*)VirtualAlloc(0, 1024 * 1024, MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
+	state.Memory = (u8*)VirtualAlloc(0, Megabytes(1), MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
 
 	// Configure the platform services
 	Platform_Services Services {};
