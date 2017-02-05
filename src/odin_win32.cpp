@@ -1,5 +1,62 @@
 #include "odin.h"
 
+// ----------------------------------------------------------------
+// Platform Services
+
+bool GetFileSize(const char *Path, u64 *Size)
+{
+	HANDLE FileHandle = CreateFile(Path, GENERIC_READ, FILE_SHARE_READ,
+		0, OPEN_EXISTING, 0, 0);
+
+	if(FileHandle == INVALID_HANDLE_VALUE)
+	{
+		return false;
+	}
+
+	LARGE_INTEGER FileSize = {};
+	if(!GetFileSizeEx(FileHandle, &FileSize))
+	{
+		return false;
+	}
+
+	*Size = FileSize.QuadPart;
+
+	if(!CloseHandle(FileHandle))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool ReadEntireFile(const char *Path, u8 *Data, u64 BytesToRead)
+{
+	HANDLE FileHandle = CreateFile(Path, GENERIC_READ, FILE_SHARE_READ,
+		0, OPEN_EXISTING, 0, 0);
+
+	if(FileHandle == INVALID_HANDLE_VALUE)
+	{
+		return false;
+	}
+
+	DWORD BytesRead = 0;
+	if(!ReadFile(FileHandle, Data, (u32)BytesToRead, &BytesRead, 0))
+	{
+		return false;
+	}
+
+	if(!CloseHandle(FileHandle))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
+
+// ----------------------------------------------------------------
+
 LRESULT CALLBACK WindowProc(HWND Window,
 	UINT Msg, WPARAM WParam, LPARAM LParam)
 {
@@ -26,7 +83,7 @@ void InitOpenGL(HWND Window, HDC *DeviceContext, HGLRC *RenderingContext)
 		PFD_DRAW_TO_WINDOW|PFD_SUPPORT_OPENGL|PFD_DOUBLEBUFFER,
 		PFD_TYPE_RGBA, 
 		32,
-		0,0,0,0,0,0,0,0,0,0,0,0,0, // useles parameters
+		0,0,0,0,0,0,0,0,0,0,0,0,0, // useless parameters
 		16,
 		0,0,0,0,0,0,0
 	};
@@ -37,12 +94,6 @@ void InitOpenGL(HWND Window, HDC *DeviceContext, HGLRC *RenderingContext)
 	*RenderingContext = wglCreateContext(*DeviceContext);
 	Assert(*RenderingContext != 0);
 	Assert(wglMakeCurrent(*DeviceContext, *RenderingContext));
-
-	// Load OpenGL Extensions
-	/*if (!gladLoadGL())
-	{
-		MessageBox(0, "gladLoadGL() failed", "Failed to load OpenGL", 0);
-	}*/
 }
 
 int CALLBACK WinMain(HINSTANCE Instance,
@@ -61,9 +112,9 @@ int CALLBACK WinMain(HINSTANCE Instance,
 
 	// Compute Window dimensions
 	// TODO: Load this from a config file
-	int Width = 1280;
-	int Height = 720;
-	RECT r = { 0, 0, Width, Height };
+	u32 Width = 1280;
+	u32 Height = 720;
+	RECT r = { 0, 0, (LONG)Width, (LONG)Height };
 	AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, false);
 
 	// Create Window
@@ -83,7 +134,15 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	Game_State state {};
 	state.Width = Width;
 	state.Height = Height;
-	//state.Memory = VirtualAlloc(..);
+	state.Memory = (u8*)VirtualAlloc(0, 1024 * 1024, MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
+
+	// Configure the platform services
+	Platform_Services Services {};
+	Services.GetFileSize = GetFileSize;
+	Services.ReadEntireFile = ReadEntireFile;
+
+	state.Services = Services;
+
 	OdinInit(&state);
 
 	SwapBuffers(DeviceContext);
