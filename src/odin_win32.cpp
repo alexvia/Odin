@@ -72,6 +72,13 @@ LRESULT CALLBACK WindowProc(HWND Window,
 	return 0;
 }
 
+void HandleInput(MSG *Msg)
+{
+	switch(Msg->message)
+	{
+	}
+}
+
 void InitOpenGL(HWND Window, HDC *DeviceContext, HGLRC *RenderingContext)
 {
 	*DeviceContext = GetDC(Window);
@@ -162,9 +169,15 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	{
 		if(PeekMessage(&Msg, 0, 0, 0, PM_REMOVE))
 		{
-			if(Msg.message == WM_QUIT)
+			if(Msg.message == WM_QUIT || (Msg.message == WM_KEYDOWN && Msg.wParam == VK_ESCAPE))
 			{
 				running = false;
+			}
+
+			if(Msg.message == WM_KEYDOWN 	|| Msg.message == WM_KEYUP ||
+			   Msg.message == WM_SYSKEYDOWN || Msg.message == WM_SYSKEYUP)
+			{
+				HandleInput(&Msg);
 			}
 
 			TranslateMessage(&Msg);

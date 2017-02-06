@@ -30,10 +30,38 @@ struct Platform_Services
 	bool (*ReadEntireFile)(const char*, u8*, u64);
 };
 
+struct Mat4
+{
+	union
+	{
+		struct
+		{	// Column-Major order
+			f32 _00, _10, _20, _30;	// First Column
+			f32 _01, _11, _21, _31;	// Second Column
+			f32 _02, _12, _22, _32;	// Third Column
+			f32 _03, _13, _23, _33;	// Fourth Column
+		};
+		struct
+		{
+			f32 C0[4], C1[4], C2[4], C3[4];
+		};
+		f32 M[4][4];
+		f32 data[16];
+	};
+};
+
+struct Mesh
+{
+	GLuint VAO;
+	u32 IndexCount;
+};
+
 struct Game_State
 {
 	u32 Width;
 	u32 Height;
+
+	Mesh Meshes[10];
 
 	u8 *Memory;
 
@@ -41,5 +69,12 @@ struct Game_State
 };
 
 typedef void (__stdcall *pOdinFunc)(Game_State *state);
+
+struct Vertex
+{
+	f32 x, y, z;
+	f32 u, v;
+	f32 nx, ny, nz;
+};
 
 #endif
