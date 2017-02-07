@@ -61,6 +61,13 @@ struct Mesh
 	u32 IndexCount;
 };
 
+struct Model
+{
+	Mesh *mesh;
+	GLuint TexId;
+	Mat4 *Transform;
+};
+
 struct Input_State
 {
 	u8 Up, Down, Left, Right, Back, Forward;

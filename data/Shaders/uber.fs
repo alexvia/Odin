@@ -28,6 +28,6 @@ void main()
 	//color = vec3(fNormal);
 	fColor = vec4(color, 1.0);
 	fColor = texture(AlbedoMap, vec2(fUV.x, 1 - fUV.y));
-	fColor.xyz *= Albedo * Kd + amb;
-	fColor = vec4(1,1,1, 1.0);
+	//fColor.xyz *= Albedo * Kd + amb;
+	//fColor = vec4(1,1,1, 1.0);
 }

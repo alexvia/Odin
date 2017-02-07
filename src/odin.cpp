@@ -1,6 +1,9 @@
 #include "odin.h"
 #include "odin_math.cpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
+
 static Platform_Services Services;
 static u8 *Memory;
 
@@ -119,6 +122,20 @@ extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 	State->Meshes[2] = LoadMesh("Models/bonelord_part2_part2.msh");
 	State->Meshes[3] = LoadMesh("Models/bonelord_2side_part1.msh");
 	State->Meshes[4] = LoadMesh("Models/bonelord_2side_part2.msh");
+
+	int x, y, n;
+	u8 *data = stbi_load("Textures/lord/bonelord.png", &x, &y, &n, 0);
+	GLuint TexId;
+	glGenTextures(1, &TexId);
+	glBindTexture(GL_TEXTURE_2D, TexId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	stbi_image_free(data);
 
 	Mat4 Proj = PerspectiveMat4(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
 	
