@@ -106,6 +106,25 @@ Mesh LoadMesh(const char *Path)
 	return m;
 }
 
+GLuint LoadTexture(const char *path)
+{
+	int x, y, n;
+	u8 *data = stbi_load(path, &x, &y, &n, 0);
+	GLuint TexId;
+	glGenTextures(1, &TexId);
+	glBindTexture(GL_TEXTURE_2D, TexId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	stbi_image_free(data);
+
+	return TexId;
+}
+
 // --------------------------------------------------------------------------
 // Export functions called from the platform layer
 GLuint Program;
@@ -123,19 +142,11 @@ extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 	State->Meshes[3] = LoadMesh("Models/bonelord_2side_part1.msh");
 	State->Meshes[4] = LoadMesh("Models/bonelord_2side_part2.msh");
 
-	int x, y, n;
-	u8 *data = stbi_load("Textures/lord/bonelord.png", &x, &y, &n, 0);
-	GLuint TexId;
-	glGenTextures(1, &TexId);
-	glBindTexture(GL_TEXTURE_2D, TexId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	stbi_image_free(data);
+	State->Models[0].TexId = LoadTexture("Textures/lord/bonelord.png");
+	State->Models[1].TexId = State->Models[0].TexId;
+	State->Models[2].TexId = State->Models[0].TexId;
+	State->Models[3].TexId = LoadTexture("Textures/lord/bonelord_2side.png");
+	State->Models[4].TexId = State->Models[3].TexId;
 
 	Mat4 Proj = PerspectiveMat4(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
 	
@@ -146,6 +157,9 @@ extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 	glUniformMatrix4fv(glGetUniformLocation(Program, "Model"), 1, GL_FALSE, Model.data);
 
 	glViewport(0, 0, State->Width, State->Height);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 }
 
 extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *State)
@@ -208,6 +222,7 @@ extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *Stat
 		if(State->Meshes[i].VAO)
 		{
 			glBindVertexArray(State->Meshes[i].VAO);
+			glBindTexture(GL_TEXTURE_2D, State->Models[i].TexId);
 			glDrawElements(GL_TRIANGLES, State->Meshes[i].IndexCount, GL_UNSIGNED_INT, 0);
 		}
 	}

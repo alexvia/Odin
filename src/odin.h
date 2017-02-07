@@ -81,6 +81,7 @@ struct Game_State
 
 	Input_State Input;
 
+	Model Models[10];
 	Mesh Meshes[10];
 
 	u8 *Memory;
