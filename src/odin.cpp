@@ -173,6 +173,10 @@ extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *Stat
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
+	Vec3 Pos { 0.0f, 10.0f, 25.0f };
+	Vec3 Target { 0.0f, 10.0f, 0.0f };
+	Vec3 Up { 0.0f, 1.0f, 0.0f };
+
 	glBindVertexArray(State->Meshes[0].VAO);
 	glDrawElements(GL_TRIANGLES, State->Meshes[0].IndexCount, GL_UNSIGNED_INT, 0);
 }

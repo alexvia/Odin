@@ -72,10 +72,16 @@ LRESULT CALLBACK WindowProc(HWND Window,
 	return 0;
 }
 
-void HandleInput(MSG *Msg)
+void HandleInput(MSG *Msg, Input_State *Input)
 {
 	switch(Msg->message)
 	{
+		case WM_KEYDOWN:
+		case WM_KEYUP:
+			Input->Up = (Msg->wParam == 'W') && !(Msg->lParam >> 31);
+			Input->Down = (Msg->wParam == 'S') && !(Msg->lParam >> 31);
+			Input->Left = (Msg->wParam == 'A') && !(Msg->lParam >> 31);
+			Input->Right = (Msg->wParam == 'D') && !(Msg->lParam >> 31);
 	}
 }
 
@@ -112,7 +118,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	WindowClass.style = CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
 	WindowClass.lpfnWndProc = WindowProc;
 	WindowClass.hInstance = Instance;
-	//WindowClass.hIcon = ;
+	//WindowClass.hIcon = LoadIcon(NULL, IDC_ICON);;
   	WindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
   	WindowClass.lpszClassName = "ClassName";
 	RegisterClass(&WindowClass);
@@ -143,19 +149,19 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	HINSTANCE GameDLL = LoadLibrary("odin.dll");
 	pOdinFunc OdinInit = (pOdinFunc)GetProcAddress(GameDLL, "Init");
 	pOdinFunc OdinUpdateAndRender = (pOdinFunc)GetProcAddress(GameDLL, "UpdateAndRender");
-	Game_State state {};
-	state.Width = Width;
-	state.Height = Height;
-	state.Memory = (u8*)VirtualAlloc(0, Megabytes(1), MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
+	Game_State State {};
+	State.Width = Width;
+	State.Height = Height;
+	State.Memory = (u8*)VirtualAlloc(0, Megabytes(1), MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
 
 	// Configure the platform services
 	Platform_Services Services {};
 	Services.GetFileSize = GetFileSize;
 	Services.ReadEntireFile = ReadEntireFile;
 
-	state.Services = Services;
+	State.Services = Services;
 
-	OdinInit(&state);
+	OdinInit(&State);
 
 	SwapBuffers(DeviceContext);
 	ShowWindow(Window, SW_SHOW);
@@ -174,18 +180,14 @@ int CALLBACK WinMain(HINSTANCE Instance,
 				running = false;
 			}
 
-			if(Msg.message == WM_KEYDOWN 	|| Msg.message == WM_KEYUP ||
-			   Msg.message == WM_SYSKEYDOWN || Msg.message == WM_SYSKEYUP)
-			{
-				HandleInput(&Msg);
-			}
+			HandleInput(&Msg, &State.Input);
 
 			TranslateMessage(&Msg);
 			DispatchMessage(&Msg);
 		}
 
 		// Update and Render
-		OdinUpdateAndRender(&state);
+		OdinUpdateAndRender(&State);
 
 		// Swap buffers
 		SwapBuffers(DeviceContext);

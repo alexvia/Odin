@@ -30,6 +30,11 @@ struct Platform_Services
 	bool (*ReadEntireFile)(const char*, u8*, u64);
 };
 
+struct Vec3
+{
+	f32 X, Y, Z;
+};
+
 struct Mat4
 {
 	union
@@ -56,10 +61,17 @@ struct Mesh
 	u32 IndexCount;
 };
 
+struct Input_State
+{
+	u8 Up, Down, Left, Right;
+};
+
 struct Game_State
 {
 	u32 Width;
 	u32 Height;
+
+	Input_State Input;
 
 	Mesh Meshes[10];
 
