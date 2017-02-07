@@ -70,8 +70,8 @@ GLuint LoadShaders(char *Name)
 Mesh LoadMesh(const char *Path)
 {
 	u64 Size;
-	Services.GetFileSize("Models/bonelord_2side_part1.msh", &Size);
-	Services.ReadEntireFile("Models/bonelord_2side_part1.msh", Memory, Size);
+	Services.GetFileSize(Path, &Size);
+	Services.ReadEntireFile(Path, Memory, Size);
 
 	u8 *magic = Memory;
 	u32 version = *(u32*)(Memory + 4);
@@ -114,7 +114,11 @@ extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 	Program = LoadShaders("uber");
 	glUseProgram(Program);
 
-	State->Meshes[0] = LoadMesh("Models/bonelord_2side_part1.msh");
+	State->Meshes[0] = LoadMesh("Models/bonelord_part1.msh");
+	State->Meshes[1] = LoadMesh("Models/bonelord_part2_part1.msh");
+	State->Meshes[2] = LoadMesh("Models/bonelord_part2_part2.msh");
+	State->Meshes[3] = LoadMesh("Models/bonelord_2side_part1.msh");
+	State->Meshes[4] = LoadMesh("Models/bonelord_2side_part2.msh");
 
 	Mat4 Proj = PerspectiveMat4(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
 	
@@ -162,6 +166,16 @@ extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *Stat
 		Pos.X += Speed;
 		Target.X += Speed;
 	}
+	if (State->Input.Back)
+	{
+		Pos.Z += Speed;
+		Target.Z += Speed;
+	}
+	if (State->Input.Forward)
+	{
+		Pos.Z += -Speed;
+		Target.Z += -Speed;
+	}
 
 
 	Vec3 Up { 0.0f, 1.0f, 0.0f };
@@ -172,9 +186,14 @@ extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *Stat
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 	
-
-	glBindVertexArray(State->Meshes[0].VAO);
-	glDrawElements(GL_TRIANGLES, State->Meshes[0].IndexCount, GL_UNSIGNED_INT, 0);
+	for(int i = 0; i < 10; i++)
+	{
+		if(State->Meshes[i].VAO)
+		{
+			glBindVertexArray(State->Meshes[i].VAO);
+			glDrawElements(GL_TRIANGLES, State->Meshes[i].IndexCount, GL_UNSIGNED_INT, 0);
+		}
+	}
 }
 
 // --------------------------------------------------------------------------

@@ -63,7 +63,7 @@ struct Mesh
 
 struct Input_State
 {
-	u8 Up, Down, Left, Right;
+	u8 Up, Down, Left, Right, Back, Forward;
 	u8 F1, F2;
 };
 
