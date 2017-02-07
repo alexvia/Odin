@@ -128,18 +128,24 @@ int CALLBACK WinMain(HINSTANCE Instance,
 		return -1;
 	}
 
+	// Needed to set the dimensions in pixels
+	if(!SetProcessDPIAware())
+	{
+		return -1;
+	}
+
 	// Compute Window dimensions
 	// TODO: Load this from a config file
 	u32 Width = 1280;
 	u32 Height = 720;
 	RECT r = { 0, 0, (LONG)Width, (LONG)Height };
 	AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, false);
-
+	
 	// Create Window
 	HWND Window = CreateWindow(WindowClass.lpszClassName,
  		"Odin", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
  		r.right - r.left, r.bottom - r.top,
- 		0, 0, 0, 0);
+ 		0, 0, Instance, 0);
 
 	// Init OpenGL
 	HDC DeviceContext = 0;

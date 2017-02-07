@@ -7,40 +7,6 @@ static u8 *Memory;
 // --------------------------------------------------------------------------
 // Util functions (Split in multiple files)
 
-/*Mat4 IdentityMat4()
-{
-	Mat4 M {};
-	M._00 = M._11 = M._22 = M._33 = 1.0f;
-	return M;
-}
-
-Mat4 operator*(const Mat4 &A, const Mat4 &B)
-{
-	Mat4 M {};
-
-	M._00 = A._00*B._00 + A._01*B._10 + A._02*B._20 + A._03*B._30;
-	M._01 = A._00*B._01 + A._01*B._11 + A._02*B._21 + A._03*B._31;
-	M._02 = A._00*B._02 + A._01*B._12 + A._02*B._22 + A._03*B._32;
-	M._03 = A._00*B._03 + A._01*B._13 + A._02*B._23 + A._03*B._33;
-
-	M._10 = A._10*B._00 + A._11*B._10 + A._12*B._20 + A._13*B._30;
-	M._11 = A._10*B._01 + A._11*B._11 + A._12*B._21 + A._13*B._31;
-	M._12 = A._10*B._02 + A._11*B._12 + A._12*B._22 + A._13*B._32;
-	M._13 = A._10*B._03 + A._11*B._13 + A._12*B._23 + A._13*B._33;
-
-	M._20 = A._20*B._00 + A._21*B._10 + A._22*B._20 + A._23*B._30;
-	M._21 = A._20*B._01 + A._21*B._11 + A._22*B._21 + A._23*B._31;
-	M._22 = A._20*B._02 + A._21*B._12 + A._22*B._22 + A._23*B._32;
-	M._23 = A._20*B._03 + A._21*B._13 + A._22*B._23 + A._23*B._33;
-
-	M._30 = A._30*B._00 + A._31*B._10 + A._32*B._20 + A._33*B._30;
-	M._31 = A._30*B._01 + A._31*B._11 + A._32*B._21 + A._33*B._31;
-	M._32 = A._30*B._02 + A._31*B._12 + A._32*B._22 + A._33*B._32;
-	M._33 = A._30*B._03 + A._31*B._13 + A._32*B._23 + A._33*B._33;
-
-	return M;
-}*/
-
 GLuint GetShader(const char *FullPath, GLenum type)
 {
 	u64 Size;
@@ -150,19 +116,12 @@ extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 
 	State->Meshes[0] = LoadMesh("Models/bonelord_2side_part1.msh");
 
-	f32 ProjView[] = 
-	{
-		1.358f, 0.0f, 0.0f, 0.0f,
-		0.0f, 2.414f, 0.0f, 0.0f,
-		0.0f, 0.0f, -1.0f, -1.0f,
-		0.0f, -24.14f, 24.805f, 25.0f
-	};
-
 	Mat4 Proj = PerspectiveMat4(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-	//Mat4 View = LookAtMat4();
+	Mat4 View = LookAtMat4(Vec3 {0.0f, 10.0f, 25.0f}, Vec3 {0.0f, 10.0f, 0.0f}, Vec3 {0.0f, 1.0f, 0.0f});
+	Mat4 ProjView = Proj * View;
 	Mat4 Model = IdentityMat4();
 
-	glUniformMatrix4fv(glGetUniformLocation(Program, "ProjView"), 1, GL_FALSE, ProjView);
+	glUniformMatrix4fv(glGetUniformLocation(Program, "ProjView"), 1, GL_FALSE, ProjView.data);
 	glUniformMatrix4fv(glGetUniformLocation(Program, "Model"), 1, GL_FALSE, Model.data);
 
 	glViewport(0, 0, State->Width, State->Height);
