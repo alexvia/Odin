@@ -64,6 +64,7 @@ struct Mesh
 struct Input_State
 {
 	u8 Up, Down, Left, Right;
+	u8 F1, F2;
 };
 
 struct Game_State

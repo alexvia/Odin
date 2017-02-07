@@ -82,6 +82,9 @@ void HandleInput(MSG *Msg, Input_State *Input)
 			Input->Down = (Msg->wParam == 'S') && !(Msg->lParam >> 31);
 			Input->Left = (Msg->wParam == 'A') && !(Msg->lParam >> 31);
 			Input->Right = (Msg->wParam == 'D') && !(Msg->lParam >> 31);
+
+			Input->F1 = (Msg->wParam == VK_F1) && !(Msg->lParam >> 31);
+			Input->F2 = (Msg->wParam == VK_F2) && !(Msg->lParam >> 31);
 	}
 }
 

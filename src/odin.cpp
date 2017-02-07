@@ -105,23 +105,23 @@ Mesh LoadMesh(const char *Path)
 
 // --------------------------------------------------------------------------
 // Export functions called from the platform layer
-
+GLuint Program;
 extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 {
 	Services = State->Services;
 	Memory = State->Memory;
 
-	GLuint Program = LoadShaders("uber");
+	Program = LoadShaders("uber");
 	glUseProgram(Program);
 
 	State->Meshes[0] = LoadMesh("Models/bonelord_2side_part1.msh");
 
 	Mat4 Proj = PerspectiveMat4(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-	Mat4 View = LookAtMat4(Vec3 {0.0f, 10.0f, 25.0f}, Vec3 {0.0f, 10.0f, 0.0f}, Vec3 {0.0f, 1.0f, 0.0f});
-	Mat4 ProjView = Proj * View;
+	
 	Mat4 Model = IdentityMat4();
 
-	glUniformMatrix4fv(glGetUniformLocation(Program, "ProjView"), 1, GL_FALSE, ProjView.data);
+	glUniformMatrix4fv(glGetUniformLocation(Program, "Proj"), 1, GL_FALSE, Proj.data);
+	
 	glUniformMatrix4fv(glGetUniformLocation(Program, "Model"), 1, GL_FALSE, Model.data);
 
 	glViewport(0, 0, State->Width, State->Height);
@@ -129,12 +129,49 @@ extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 
 extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *State)
 {
+	if(State->Input.F1)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+
+	if(State->Input.F2)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	static Vec3 Pos { 0.0f, 10.0f, 25.0f };
+	static Vec3 Target { 0.0f, 10.0f, 0.0f };
+	float Speed = 0.1f;
+	if (State->Input.Up)
+	{
+		Pos.Y += Speed;
+		Target.Y += Speed;
+	}
+	if (State->Input.Down)
+	{
+		Pos.Y += -Speed;
+		Target.Y += -Speed;
+	}
+	if (State->Input.Left)
+	{
+		Pos.X += -Speed;
+		Target.X += -Speed;
+	}
+	if (State->Input.Right)
+	{
+		Pos.X += Speed;
+		Target.X += Speed;
+	}
+
+
+	Vec3 Up { 0.0f, 1.0f, 0.0f };
+	Mat4 View = LookAtMat4(Pos, Target, Up);
+	glUniformMatrix4fv(glGetUniformLocation(Program, "View"), 1, GL_FALSE, View.data);
+
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-	Vec3 Pos { 0.0f, 10.0f, 25.0f };
-	Vec3 Target { 0.0f, 10.0f, 0.0f };
-	Vec3 Up { 0.0f, 1.0f, 0.0f };
+	
 
 	glBindVertexArray(State->Meshes[0].VAO);
 	glDrawElements(GL_TRIANGLES, State->Meshes[0].IndexCount, GL_UNSIGNED_INT, 0);
