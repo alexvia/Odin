@@ -4,6 +4,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb/stb_image_write.h"
+
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb/stb_truetype.h"
+
 static Platform_Services Services;
 static u8 *Memory;
 
@@ -33,7 +39,7 @@ GLuint GetShader(const char *FullPath, GLenum type)
 	return Shader;
 }
 
-GLuint LoadShaders(char *Name)
+GLuint LoadShader(char *Name)
 {
 	// TODO: Implement better string manipulation
 	char FullPath[MAX_PATH] { "Shaders/" };
@@ -106,6 +112,37 @@ Mesh LoadMesh(const char *Path)
 	return m;
 }
 
+Mesh LoadQuad()
+{
+	f32 vertices[] = 
+	{
+		-1.0f, -1.0f,	0.0f, 0.0f,
+		+1.0f, -1.0f,	1.0f, 0.0f,
+		+1.0f, +1.0f,	1.0f, 1.0f,
+		-1.0f, +1.0f,	0.0f, 1.0f
+	};
+
+	u32 indices[] = { 0, 1, 2, 2, 3, 0 };
+
+	GLuint VAO, VBO, IBO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(f32), (void*)0);
+	glEnableVertexAttribArray(0);
+	glGenBuffers(1, &IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBindVertexArray(0);
+
+	Mesh m {};
+	m.VAO = VAO;
+	m.IndexCount = 6;
+	return m;
+}
+
 GLuint LoadTexture(const char *path)
 {
 	int x, y, n;
@@ -125,32 +162,41 @@ GLuint LoadTexture(const char *path)
 	return TexId;
 }
 
+void RenderText()
+{
+
+}
+
 // --------------------------------------------------------------------------
 // Export functions called from the platform layer
-GLuint Program;
+GLuint Program, TextProgram;
+Mat4 Proj, Model;
 extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 {
 	Services = State->Services;
 	Memory = State->Memory;
 
-	Program = LoadShaders("uber");
+	Program = LoadShader("uber");
 	glUseProgram(Program);
+	TextProgram = LoadShader("text");
 
 	State->Meshes[0] = LoadMesh("Models/bonelord_part1.msh");
 	State->Meshes[1] = LoadMesh("Models/bonelord_part2_part1.msh");
 	State->Meshes[2] = LoadMesh("Models/bonelord_part2_part2.msh");
 	State->Meshes[3] = LoadMesh("Models/bonelord_2side_part1.msh");
 	State->Meshes[4] = LoadMesh("Models/bonelord_2side_part2.msh");
+	State->Meshes[5] = LoadQuad();
 
-	State->Models[0].TexId = LoadTexture("Textures/lord/bonelord.png");
+	State->Models[0].TexId = LoadTexture("Textures/lord/bonelord_alpha.png");
 	State->Models[1].TexId = State->Models[0].TexId;
 	State->Models[2].TexId = State->Models[0].TexId;
-	State->Models[3].TexId = LoadTexture("Textures/lord/bonelord_2side.png");
+	State->Models[3].TexId = LoadTexture("Textures/lord/bonelord_2side_alpha.png");
 	State->Models[4].TexId = State->Models[3].TexId;
 
-	Mat4 Proj = PerspectiveMat4(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+
+	Proj = PerspectiveMat4(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
 	
-	Mat4 Model = IdentityMat4();
+	Model = IdentityMat4();
 
 	glUniformMatrix4fv(glGetUniformLocation(Program, "Proj"), 1, GL_FALSE, Proj.data);
 	
@@ -160,6 +206,36 @@ extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+
+	// Alpha-blending
+	glEnable(GL_BLEND); 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	u64 Size;
+	Services.GetFileSize("c:/windows/fonts/arialbd.ttf", &Size);
+	u8 *FontText = new u8[Size];
+	Services.ReadEntireFile("c:/windows/fonts/arialbd.ttf", FontText, Size);
+	stbtt_fontinfo Font;
+   	int Width, Height, XOffset, YOffset;
+   	stbtt_InitFont(&Font, FontText, stbtt_GetFontOffsetForIndex(FontText, 0));
+   	u8 *Bitmap = stbtt_GetCodepointBitmap(&Font, 0, stbtt_ScaleForPixelHeight(&Font, 128), 
+   		'b', &Width, &Height, &XOffset, &YOffset);
+
+   	GLuint TexId;
+	glGenTextures(1, &TexId);
+	glBindTexture(GL_TEXTURE_2D, TexId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, Width, Height, 0, GL_RED, GL_UNSIGNED_BYTE, Bitmap);
+	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, Width, Height, GL_RED, GL_UNSIGNED_BYTE, Bitmap);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	State->Models[5].TexId = TexId;
+
+	stbtt_FreeBitmap(Bitmap, 0);
 }
 
 extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *State)
@@ -208,24 +284,35 @@ extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *Stat
 		Target.Z += -Speed;
 	}
 
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glUseProgram(Program);
 
 	Vec3 Up { 0.0f, 1.0f, 0.0f };
 	Mat4 View = LookAtMat4(Pos, Target, Up);
 	glUniformMatrix4fv(glGetUniformLocation(Program, "View"), 1, GL_FALSE, View.data);
 
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glUniformMatrix4fv(glGetUniformLocation(Program, "Proj"), 1, GL_FALSE, Proj.data);
 
-	
+	glUniformMatrix4fv(glGetUniformLocation(Program, "Model"), 1, GL_FALSE, Model.data);
 	for(int i = 0; i < 10; i++)
 	{
 		if(State->Meshes[i].VAO)
 		{
+			if (i == 5)
+			{
+				glUseProgram(TextProgram);
+				glUniformMatrix4fv(glGetUniformLocation(TextProgram, "Proj"), 1, GL_FALSE, (Proj * View).data);
+			}
+
 			glBindVertexArray(State->Meshes[i].VAO);
 			glBindTexture(GL_TEXTURE_2D, State->Models[i].TexId);
 			glDrawElements(GL_TRIANGLES, State->Meshes[i].IndexCount, GL_UNSIGNED_INT, 0);
 		}
 	}
+
+	RenderText();
 }
 
 // --------------------------------------------------------------------------

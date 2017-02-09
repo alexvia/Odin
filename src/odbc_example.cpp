@@ -12,11 +12,14 @@ int main()
 	result = SQLSetEnvAttr(environment, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0);
 	result = SQLAllocHandle(SQL_HANDLE_DBC, environment, &connection);
 
+	// MySQL
 	char *connectionString = "DRIVER={MySQL ODBC 5.3 ANSI Driver};UID=root;PWD=DpassBword99;DATABASE=TestDB;PORT=3306";
+	
+	// MSSQL
+	//char *connectionString = "DRIVER={SQL Server};";
+
 	SQLCHAR *connectionOut = new SQLCHAR[1024];
 	SQLSMALLINT connectionOutSize;
-
-	//result = SQLSetConnectAttr(connection, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0);
 
 	result = SQLDriverConnect(connection, 0, (SQLCHAR*)connectionString, strlen(connectionString),
 		connectionOut, 1024, &connectionOutSize, SQL_DRIVER_NOPROMPT);

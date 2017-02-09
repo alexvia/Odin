@@ -78,15 +78,15 @@ void HandleInput(MSG *Msg, Input_State *Input)
 	{
 		case WM_KEYDOWN:
 		case WM_KEYUP:
-			Input->Up = (Msg->wParam == 'W') && !(Msg->lParam >> 31);
-			Input->Down = (Msg->wParam == 'S') && !(Msg->lParam >> 31);
-			Input->Left = (Msg->wParam == 'A') && !(Msg->lParam >> 31);
-			Input->Right = (Msg->wParam == 'D') && !(Msg->lParam >> 31);
-			Input->Back = (Msg->wParam == 'Q') && !(Msg->lParam >> 31);
-			Input->Forward = (Msg->wParam == 'E') && !(Msg->lParam >> 31);
-
-			Input->F1 = (Msg->wParam == VK_F1) && !(Msg->lParam >> 31);
-			Input->F2 = (Msg->wParam == VK_F2) && !(Msg->lParam >> 31);
+			if(Msg->wParam == 'W')	Input->Up 		= (Msg->lParam >> 31) == 0;
+			if(Msg->wParam == 'S')	Input->Down 	= (Msg->lParam >> 31) == 0;
+			if(Msg->wParam == 'A')	Input->Left 	= (Msg->lParam >> 31) == 0;
+			if(Msg->wParam == 'D')	Input->Right 	= (Msg->lParam >> 31) == 0;
+			if(Msg->wParam == 'Q')	Input->Back 	= (Msg->lParam >> 31) == 0;
+			if(Msg->wParam == 'E')	Input->Forward 	= (Msg->lParam >> 31) == 0;
+			if(Msg->wParam == VK_F1) Input->F1 		= (Msg->lParam >> 31) == 0;
+			if(Msg->wParam == VK_F2) Input->F2 		= (Msg->lParam >> 31) == 0;
+			break;
 	}
 }
 
