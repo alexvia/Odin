@@ -1,19 +1,19 @@
 #include <math.h>
 
 
-Vec3 operator-(const Vec3 &A, const Vec3 &B)
+vec3 operator-(const vec3 &A, const vec3 &B)
 {
-	return Vec3 { A.X - B.X, A.Y - B.Y, A.Z - B.Z };
+	return vec3 { A.X - B.X, A.Y - B.Y, A.Z - B.Z };
 }
 
-float Dot(const Vec3 &A, const Vec3 &B)
+float Dot(const vec3 &A, const vec3 &B)
 {
 	return A.X * B.X + A.Y * B.Y + A.Z * B.Z;
 }
 
-Vec3 Cross(const Vec3 &A, const Vec3 &B)
+vec3 Cross(const vec3 &A, const vec3 &B)
 {
-	Vec3 V = 
+	vec3 V = 
 	{ 
 		A.Y * B.Z - B.Y * A.Z,
 		A.Z * B.X - B.Z * A.X,
@@ -23,23 +23,23 @@ Vec3 Cross(const Vec3 &A, const Vec3 &B)
 	return V;
 }
 
-Vec3 Normalize(const Vec3 &A)
+vec3 Normalize(const vec3 &A)
 {
 	float InvSqrt = 1.0f / sqrt(Dot(A, A));
-	Vec3 V = { A.X * InvSqrt, A.Y * InvSqrt, A.Z * InvSqrt };
+	vec3 V = { A.X * InvSqrt, A.Y * InvSqrt, A.Z * InvSqrt };
 	return V;
 }
 
-Mat4 IdentityMat4()
+mat4 IdentityMat4()
 {
-	Mat4 M {};
+	mat4 M {};
 	M._00 = M._11 = M._22 = M._33 = 1.0f;
 	return M;
 }
 
-Mat4 operator*(const Mat4 &A, const Mat4 &B)
+mat4 operator*(const mat4 &A, const mat4 &B)
 {
-	Mat4 M {};
+	mat4 M {};
 	
 	M._00 = A._00*B._00 + A._01*B._10 + A._02*B._20 + A._03*B._30;
 	M._01 = A._00*B._01 + A._01*B._11 + A._02*B._21 + A._03*B._31;
@@ -64,9 +64,9 @@ Mat4 operator*(const Mat4 &A, const Mat4 &B)
 	return M;
 }
 
-Mat4 PerspectiveMat4(f32 FoV, f32 Aspect, f32 Near, f32 Far)
+mat4 PerspectiveMat4(f32 FoV, f32 Aspect, f32 Near, f32 Far)
 {
-	Mat4 M {};
+	mat4 M {};
 
 	f32 TanHalfFovY = tanf(FoV / 2.0f);
 	M._00 = 1.0f / (Aspect * TanHalfFovY);
@@ -78,13 +78,13 @@ Mat4 PerspectiveMat4(f32 FoV, f32 Aspect, f32 Near, f32 Far)
 	return M;
 }
 
-Mat4 LookAtMat4(Vec3 &Eye, Vec3 &Center, Vec3 &Up)
+mat4 LookAtMat4(vec3 &Eye, vec3 &Center, vec3 &Up)
 {
-	Mat4 M = IdentityMat4();
+	mat4 M = IdentityMat4();
 
-	Vec3 Front = Normalize(Center - Eye);
-	Vec3 Side  = Normalize(Cross(Front, Up));
-	Vec3 U     = Cross(Side, Front);
+	vec3 Front = Normalize(Center - Eye);
+	vec3 Side  = Normalize(Cross(Front, Up));
+	vec3 U     = Cross(Side, Front);
 
 	M._00 = Side.X;
 	M._01 = Side.Y;
@@ -99,5 +99,14 @@ Mat4 LookAtMat4(Vec3 &Eye, Vec3 &Center, Vec3 &Up)
 	M._13 = -Dot(U, Eye);
 	M._23 = +Dot(Front, Eye);
 
+	return M;
+}
+
+mat4 TranslationMat4(float X, float Y, float Z)
+{
+	mat4 M = IdentityMat4();
+	M._03 = X;
+	M._13 = Y;
+	M._23 = Z;
 	return M;
 }

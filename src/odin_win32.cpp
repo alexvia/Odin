@@ -72,7 +72,7 @@ LRESULT CALLBACK WindowProc(HWND Window,
 	return 0;
 }
 
-void HandleInput(MSG *Msg, Input_State *Input)
+void HandleInput(MSG *Msg, input_state *Input)
 {
 	switch(Msg->message)
 	{
@@ -160,16 +160,16 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	HINSTANCE GameDLL = LoadLibrary("odin.dll");
 	pOdinFunc OdinInit = (pOdinFunc)GetProcAddress(GameDLL, "Init");
 	pOdinFunc OdinUpdateAndRender = (pOdinFunc)GetProcAddress(GameDLL, "UpdateAndRender");
-	Game_State State {};
+	
+	game_state State {};
 	State.Width = Width;
 	State.Height = Height;
 	State.Memory = (u8*)VirtualAlloc(0, Megabytes(1), MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
 
 	// Configure the platform services
-	Platform_Services Services {};
+	platform_services Services {};
 	Services.GetFileSize = GetFileSize;
 	Services.ReadEntireFile = ReadEntireFile;
-
 	State.Services = Services;
 
 	OdinInit(&State);

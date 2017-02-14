@@ -24,18 +24,23 @@ typedef double f64;
 
 #define Assert(Expression) if(!(Expression)) {*(int *)0 = 0;}
 
-struct Platform_Services
+struct platform_services
 {
 	bool (*GetFileSize)(const char*, u64*);
 	bool (*ReadEntireFile)(const char*, u8*, u64);
 };
 
-struct Vec3
+struct vec2
+{
+	f32 X, Y;
+};
+
+struct vec3
 {
 	f32 X, Y, Z;
 };
 
-struct Mat4
+struct mat4
 {
 	union
 	{
@@ -55,43 +60,45 @@ struct Mat4
 	};
 };
 
-struct Mesh
+struct mesh
 {
 	GLuint VAO;
 	u32 IndexCount;
 };
 
-struct Model
+struct model
 {
-	Mesh *mesh;
+	mesh Mesh;
 	GLuint TexId;
-	Mat4 *Transform;
+	mat4 *Transform;
 };
 
-struct Input_State
+struct input_state
 {
 	u8 Up, Down, Left, Right, Back, Forward;
 	u8 F1, F2;
 };
 
-struct Game_State
+struct game_state
 {
 	u32 Width;
 	u32 Height;
 
-	Input_State Input;
+	input_state Input;
 
-	Model Models[10];
-	Mesh Meshes[10];
+	model Models[10];
+	mesh Meshes[10];
 
 	u8 *Memory;
 
-	Platform_Services Services;
+	mat4 Proj;
+
+	platform_services Services;
 };
 
-typedef void (__stdcall *pOdinFunc)(Game_State *state);
+typedef void (__stdcall *pOdinFunc)(game_state *state);
 
-struct Vertex
+struct vertex
 {
 	f32 x, y, z;
 	f32 u, v;

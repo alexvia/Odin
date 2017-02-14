@@ -10,7 +10,7 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb/stb_truetype.h"
 
-static Platform_Services Services;
+static platform_services Services;
 static u8 *Memory;
 
 // --------------------------------------------------------------------------
@@ -76,7 +76,7 @@ GLuint LoadShader(char *Name)
 	return Program;
 }
 
-Mesh LoadMesh(const char *Path)
+mesh LoadMesh(const char *Path)
 {
 	u64 Size;
 	Services.GetFileSize(Path, &Size);
@@ -85,34 +85,34 @@ Mesh LoadMesh(const char *Path)
 	u8 *magic = Memory;
 	u32 version = *(u32*)(Memory + 4);
 	u32 vCount = *(u32*)(Memory + 8);
-	Vertex *vertices = (Vertex*)(Memory + 12);
-	u32 iCount = *(u32*)(Memory + 12 + (vCount) * sizeof(Vertex));
-	u32 *indices = (u32*)(Memory + 12 + (vCount) * sizeof(Vertex) + 4);
+	vertex *vertices = (vertex*)(Memory + 12);
+	u32 iCount = *(u32*)(Memory + 12 + (vCount) * sizeof(vertex));
+	u32 *indices = (u32*)(Memory + 12 + (vCount) * sizeof(vertex) + 4);
 
 	GLuint VAO, VBO, IBO;
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, vCount * sizeof(Vertex), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+	glBufferData(GL_ARRAY_BUFFER, vCount * sizeof(vertex), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(f32)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(f32)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(5 * sizeof(f32)));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(5 * sizeof(f32)));
 	glEnableVertexAttribArray(2);
 	glGenBuffers(1, &IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, iCount * sizeof(u32), indices, GL_STATIC_DRAW);
 	glBindVertexArray(0);
 
-	Mesh m {};
+	mesh m {};
 	m.VAO = VAO;
 	m.IndexCount = iCount;
 	return m;
 }
 
-Mesh LoadQuad()
+mesh LoadQuad()
 {
 	f32 vertices[] = 
 	{
@@ -137,16 +137,16 @@ Mesh LoadQuad()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	glBindVertexArray(0);
 
-	Mesh m {};
+	mesh m {};
 	m.VAO = VAO;
 	m.IndexCount = 6;
 	return m;
 }
 
-GLuint LoadTexture(const char *path)
+GLuint LoadTexture(const char *Path)
 {
 	int x, y, n;
-	u8 *data = stbi_load(path, &x, &y, &n, 0);
+	u8 *data = stbi_load(Path, &x, &y, &n, 0);
 	GLuint TexId;
 	glGenTextures(1, &TexId);
 	glBindTexture(GL_TEXTURE_2D, TexId);
@@ -162,55 +162,8 @@ GLuint LoadTexture(const char *path)
 	return TexId;
 }
 
-void RenderText()
+GLuint LoadFontTexture(const char *Path, char C)
 {
-
-}
-
-// --------------------------------------------------------------------------
-// Export functions called from the platform layer
-GLuint Program, TextProgram;
-Mat4 Proj, Model;
-extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
-{
-	Services = State->Services;
-	Memory = State->Memory;
-
-	Program = LoadShader("uber");
-	glUseProgram(Program);
-	TextProgram = LoadShader("text");
-
-	State->Meshes[0] = LoadMesh("Models/bonelord_part1.msh");
-	State->Meshes[1] = LoadMesh("Models/bonelord_part2_part1.msh");
-	State->Meshes[2] = LoadMesh("Models/bonelord_part2_part2.msh");
-	State->Meshes[3] = LoadMesh("Models/bonelord_2side_part1.msh");
-	State->Meshes[4] = LoadMesh("Models/bonelord_2side_part2.msh");
-	State->Meshes[5] = LoadQuad();
-
-	State->Models[0].TexId = LoadTexture("Textures/lord/bonelord_alpha.png");
-	State->Models[1].TexId = State->Models[0].TexId;
-	State->Models[2].TexId = State->Models[0].TexId;
-	State->Models[3].TexId = LoadTexture("Textures/lord/bonelord_2side_alpha.png");
-	State->Models[4].TexId = State->Models[3].TexId;
-
-
-	Proj = PerspectiveMat4(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-	
-	Model = IdentityMat4();
-
-	glUniformMatrix4fv(glGetUniformLocation(Program, "Proj"), 1, GL_FALSE, Proj.data);
-	
-	glUniformMatrix4fv(glGetUniformLocation(Program, "Model"), 1, GL_FALSE, Model.data);
-
-	glViewport(0, 0, State->Width, State->Height);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-
-	// Alpha-blending
-	glEnable(GL_BLEND); 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	u64 Size;
 	Services.GetFileSize("c:/windows/fonts/arialbd.ttf", &Size);
 	u8 *FontText = new u8[Size];
@@ -230,15 +183,54 @@ extern "C" __declspec(dllexport) void __stdcall Init(Game_State *State)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, Width, Height, 0, GL_RED, GL_UNSIGNED_BYTE, Bitmap);
-	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, Width, Height, GL_RED, GL_UNSIGNED_BYTE, Bitmap);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	State->Models[5].TexId = TexId;
-
 	stbtt_FreeBitmap(Bitmap, 0);
+
+	return TexId;
 }
 
-extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *State)
+// --------------------------------------------------------------------------
+// Export functions called from the platform layer
+GLuint MeshShader, TextShader;
+extern "C" __declspec(dllexport) void __stdcall Init(game_state *State)
+{
+	Services = State->Services;
+	Memory = State->Memory;
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
+	glEnable(GL_BLEND); 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glViewport(0, 0, State->Width, State->Height);
+
+	State->Proj = PerspectiveMat4(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+
+	MeshShader = LoadShader("uber");
+	TextShader = LoadShader("text");
+
+	State->Models[0].Mesh = LoadMesh("Models/bonelord_part1.msh");
+	State->Models[0].TexId = LoadTexture("Textures/lord/bonelord_alpha.png");
+
+	State->Models[1].Mesh = LoadMesh("Models/bonelord_part2_part1.msh");
+	State->Models[1].TexId = State->Models[0].TexId;
+	
+	State->Models[2].Mesh = LoadMesh("Models/bonelord_part2_part2.msh");
+	State->Models[2].TexId = State->Models[0].TexId;
+	
+	State->Models[3].Mesh = LoadMesh("Models/bonelord_2side_part1.msh");
+	State->Models[3].TexId = LoadTexture("Textures/lord/bonelord_2side_alpha.png");
+	
+	State->Models[4].Mesh = LoadMesh("Models/bonelord_2side_part2.msh");
+	State->Models[4].TexId = State->Models[3].TexId;
+
+	State->Models[5].Mesh = LoadQuad();
+	State->Models[5].TexId = LoadFontTexture("c:/windows/fonts/arialbd.ttf", 'b');	
+}
+
+extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(game_state *State)
 {
 	if(State->Input.F1)
 	{
@@ -250,8 +242,8 @@ extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *Stat
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-	static Vec3 Pos { 0.0f, 10.0f, 25.0f };
-	static Vec3 Target { 0.0f, 10.0f, 0.0f };
+	static vec3 Pos { 0.0f, 10.0f, 25.0f };
+	static vec3 Target { 0.0f, 10.0f, 0.0f };
 	float Speed = 0.1f;
 	if (State->Input.Up)
 	{
@@ -287,32 +279,35 @@ extern "C" __declspec(dllexport) void __stdcall UpdateAndRender(Game_State *Stat
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glUseProgram(Program);
+	glUseProgram(MeshShader);
 
-	Vec3 Up { 0.0f, 1.0f, 0.0f };
-	Mat4 View = LookAtMat4(Pos, Target, Up);
-	glUniformMatrix4fv(glGetUniformLocation(Program, "View"), 1, GL_FALSE, View.data);
+	vec3 Up { 0.0f, 1.0f, 0.0f };
+	mat4 View = LookAtMat4(Pos, Target, Up);
+	glUniformMatrix4fv(glGetUniformLocation(MeshShader, "View"), 1, GL_FALSE, View.data);
 
-	glUniformMatrix4fv(glGetUniformLocation(Program, "Proj"), 1, GL_FALSE, Proj.data);
+	glUniformMatrix4fv(glGetUniformLocation(MeshShader, "Proj"), 1, GL_FALSE, State->Proj.data);
 
-	glUniformMatrix4fv(glGetUniformLocation(Program, "Model"), 1, GL_FALSE, Model.data);
+	glUniformMatrix4fv(glGetUniformLocation(MeshShader, "Model"), 1, GL_FALSE, TranslationMat4(0.0f, -20.0f, -100.0f).data);
 	for(int i = 0; i < 10; i++)
 	{
-		if(State->Meshes[i].VAO)
+		if(State->Models[i].Mesh.VAO)
 		{
 			if (i == 5)
 			{
-				glUseProgram(TextProgram);
-				glUniformMatrix4fv(glGetUniformLocation(TextProgram, "Proj"), 1, GL_FALSE, (Proj * View).data);
+				glUseProgram(TextShader);
+				glUniformMatrix4fv(glGetUniformLocation(TextShader, "Proj"), 1, GL_FALSE, (State->Proj * View).data);
 			}
 
-			glBindVertexArray(State->Meshes[i].VAO);
+			if (State->Models[i].Transform)
+			{
+				glUniformMatrix4fv(glGetUniformLocation(MeshShader, "Model"), 1, GL_FALSE, State->Models[i].Transform->data);
+			}
+
+			glBindVertexArray(State->Models[i].Mesh.VAO);
 			glBindTexture(GL_TEXTURE_2D, State->Models[i].TexId);
-			glDrawElements(GL_TRIANGLES, State->Meshes[i].IndexCount, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, State->Models[i].Mesh.IndexCount, GL_UNSIGNED_INT, 0);
 		}
 	}
-
-	RenderText();
 }
 
 // --------------------------------------------------------------------------
