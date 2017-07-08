@@ -10,15 +10,9 @@ int main()
 	if (!window.Create()) return -1;
 
 	//----------------------------
-	auto m1 = glm::scale(glm::vec3(2.0f, 2.0f, 2.0f));
-	auto m2 = glm::rotate(glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	auto m3 = glm::translate(glm::vec3(10.0f, 0.0f, 0.0f));
-	glm::vec4 myVector(10.0f, 10.0f, 10.0f, 1.0f);
-	glm::vec4 transformedVector = m3 * m2 * m1 * myVector;
-
 	glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)window.Width() / (float)window.Height(), 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(
-		glm::vec3(0, 13, 15), // Camera is at (4,3,3), in World Space
+		glm::vec3(0, 13, 15), // Camera is at (x, y, z), in World Space
 		glm::vec3(0, 5, 0), // and looks at the origin
 		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 	);
