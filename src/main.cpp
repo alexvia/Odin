@@ -13,7 +13,7 @@ int main()
 	glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)window.Width() / (float)window.Height(), 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(
 		glm::vec3(0, 13, 15), // Camera is at (x, y, z), in World Space
-		glm::vec3(0, 5, 0), // and looks at the origin
+		glm::vec3(0, 0, 0), // and looks at the origin
 		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 	);
 	glm::mat4 model = glm::mat4(1.0f);
@@ -41,7 +41,7 @@ int main()
 	loader.Load("../../data/models/suzanne.obj", suzanne);
 
 	ColladaLoader c;
-	c.Load("../../data/models/model.dae", quad);
+	c.Load("../../data/models/animated.dae", quad);
 	
 	// Game Loop
 	while (!window.ShouldClose())
