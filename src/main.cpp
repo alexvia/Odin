@@ -2,11 +2,16 @@
 #include <Odin/OBJLoader.h>
 #include <Odin/Shader.h>
 #include <Odin/Window.h>
+#include <Util/XmlParser.h>
 
 #include <iostream>
 
 int main()
 {
+	XmlParser parser;
+	XmlNode *root = parser.Load("../data/models/cube.dae");	
+	delete root;
+
 	TCHAR pwd[MAX_PATH];
 	GetCurrentDirectory(MAX_PATH, pwd);
 	std::cout << pwd << std::endl;

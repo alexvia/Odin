@@ -6,7 +6,7 @@ include_directories(${CMAKE_SOURCE_DIR}/extern/tinyxml2)
 
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-file(GLOB sources *.cpp)
+file(GLOB sources Odin/*.cpp Util/*.cpp *cpp)
 file(GLOB tinyxml2sources ${CMAKE_SOURCE_DIR}/extern/tinyxml2/*.cpp)
 
 add_executable(Odin ${sources} ${tinyxml2sources})
