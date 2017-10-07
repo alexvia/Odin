@@ -3,11 +3,18 @@
 #include <Odin/Shader.h>
 #include <Odin/Window.h>
 
+#include <iostream>
+
 int main()
 {
+	TCHAR pwd[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, pwd);
+	std::cout << pwd << std::endl;
+
 	// Open Window
 	Window window;
-	if (!window.Create()) return -1;
+	if (!window.Create()) 
+		return -1;
 
 	//----------------------------
 	glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)window.Width() / (float)window.Height(), 0.1f, 100.0f);
@@ -37,11 +44,11 @@ int main()
 	Mesh quad;
 	Mesh suzanne;
 	OBJLoader loader;
-	//loader.Load("../../data/models/cube.obj", quad);
-	loader.Load("../../data/models/suzanne.obj", suzanne);
+	//loader.Load("../data/models/cube.obj", quad);
+	loader.Load("../data/models/suzanne.obj", suzanne);
 
 	ColladaLoader c;
-	c.Load("../../data/models/animated.dae", quad);
+	c.Load("../data/models/animated.dae", quad);
 	
 	// Game Loop
 	while (!window.ShouldClose())

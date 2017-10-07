@@ -1,6 +1,6 @@
 #include <Odin/OBJLoader.h>
-#include <Odin/File.h>
-#include <Odin/String.h>
+#include <Util/File.h>
+#include <Util/String.h>
 
 bool OBJLoader::Load(const std::string& filename, Mesh &mesh)
 {

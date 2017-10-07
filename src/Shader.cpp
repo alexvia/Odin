@@ -1,5 +1,5 @@
 #include <Odin/Shader.h>
-#include <Odin/File.h>
+#include <Util/File.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
@@ -17,7 +17,7 @@ Shader::~Shader()
 
 bool Shader::Load(const std::string& name)
 {
-	std::string vs = File::Read("../../data/shaders/" + name + ".vs");
+	std::string vs = File::Read("../data/shaders/" + name + ".vs");
 	GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
 	const char *c_str = vs.c_str();
 	glShaderSource(vertex, 1, &c_str, nullptr);
@@ -33,7 +33,7 @@ bool Shader::Load(const std::string& name)
 		return false;
 	}
 
-	std::string fs = File::Read("../../data/shaders/" + name + ".fs");
+	std::string fs = File::Read("../data/shaders/" + name + ".fs");
 	GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
 	c_str = fs.c_str();
 	glShaderSource(fragment, 1, &c_str, nullptr);

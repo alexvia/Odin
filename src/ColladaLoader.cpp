@@ -1,7 +1,7 @@
 #include <Odin/ColladaLoader.h>
-#include <Odin/File.h>
-#include <Odin/String.h>
 #include <Odin/Vector.h>
+#include <Util/File.h>
+#include <Util/String.h>
 
 using namespace tinyxml2;
 
