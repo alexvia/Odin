@@ -5,12 +5,18 @@
 #include <Util/XmlParser.h>
 
 #include <iostream>
+#include <chrono>
 
 int main()
 {
 	XmlParser parser;
-	XmlNode *root = parser.Load("../data/models/cube.dae");	
-	delete root;
+	auto start = std::chrono::high_resolution_clock::now();
+	//XmlNode *root = parser.Load("../data/models/model.dae");
+	tinyxml2::XMLDocument doc;
+	doc.LoadFile("../data/models/model.dae");
+	auto end = std::chrono::high_resolution_clock::now();
+	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	//delete root;
 
 	TCHAR pwd[MAX_PATH];
 	GetCurrentDirectory(MAX_PATH, pwd);
